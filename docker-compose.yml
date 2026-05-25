@@ -7,12 +7,25 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=khoi@nguyengiakhoi.io.vn"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory"
+
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
+
     volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+
+    restart: unless-stopped
 
   # ── Production ────────────────────────────────────────────────
   prod:
@@ -20,12 +33,18 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+
     container_name: ngk-landing-prod
     restart: unless-stopped
 
     labels:
       - "traefik.enable=true"
+
       - "traefik.http.routers.prod.rule=Host(`nguyengiakhoi.io.vn`)"
+      - "traefik.http.routers.prod.entrypoints=websecure"
+      - "traefik.http.routers.prod.tls=true"
+      - "traefik.http.routers.prod.tls.certresolver=myresolver"
+
       - "traefik.http.services.prod.loadbalancer.server.port=80"
 
     healthcheck:
@@ -40,12 +59,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+
     container_name: ngk-landing-dev
+
     ports:
       - "5173:5173"
+
     volumes:
       - .:/app
       - /app/node_modules
+
     environment:
       - NODE_ENV=development
+
     restart: unless-stopped
+
+volumes:
+  letsencrypt:
