@@ -4,13 +4,21 @@ services:
   # Build và serve static files qua Nginx
   # Lệnh: docker compose up prod
   prod:
+    reverse_proxy:
+      image: traefik:v3.1
+      command: 
+        - "--api.insecure=true"
+        - "--providers.docker"
+      ports:
+        - "80:80"
+        - "8080:8080"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
     build:
       context: .
       dockerfile: Dockerfile
       target: runner          # chỉ build đến stage "runner"
     container_name: ngk-landing-prod
-    ports:
-      - "80:80"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]
