@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Page Not Found | Nguyễn Gia Khôi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --bg-card: #1a1d27;
+      --border: #2a2d3e;
+      --green: #00ff88;
+      --cyan: #00d4ff;
+      --red: #ff6b6b;
+      --text: #e2e8f0;
+      --dim: #64748b;
+      --font: 'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* grid bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255,107,107,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: breathe 5s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%,100% { opacity:.5; transform:translate(-50%,-50%) scale(1); }
+      50%      { opacity:1;  transform:translate(-50%,-50%) scale(1.2); }
+    }
+
+    /* canvas */
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      gap: 2rem;
+    }
+
+    /* terminal window */
+    .window {
+      width: 100%;
+      max-width: 580px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255,107,107,0.08), 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.6rem 1rem;
+      background: #13161e;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width:12px; height:12px; border-radius:50%; }
+    .r { background:#ff5f56; }
+    .y { background:#ffbd2e; }
+    .g { background:#27c93f; }
+    .bar-title {
+      font-size: 0.75rem;
+      color: var(--dim);
+      margin-left: 0.5rem;
+    }
+
+    .body {
+      padding: 1.75rem 2rem;
+      position: relative;
+    }
+    /* scanline */
+    .body::after {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);
+      pointer-events:none;
+    }
+
+    .line { display:flex; align-items:center; gap:0.4rem; line-height:1.7; }
+    .mt { margin-top: 0.75rem; }
+    .prompt { color: var(--green); font-weight:600; }
+    .cmd { color: var(--cyan); }
+
+    .error-code {
+      font-size: clamp(3.5rem, 12vw, 6rem);
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--red), #ff9966);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glitch 4s infinite;
+      position: relative;
+      display: inline-block;
+      margin: 0.25rem 0;
+    }
+
+    @keyframes glitch {
+      0%,88%,100% { transform:none; filter:none; }
+      89% { transform:skewX(-2deg) translateX(3px); filter:drop-shadow(2px 0 var(--cyan)); }
+      90% { transform:skewX(1deg) translateX(-3px); filter:drop-shadow(-2px 0 var(--red)); }
+      91% { transform:none; filter:none; }
+    }
+
+    .msg {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-top: 0.25rem;
+    }
+
+    .cursor {
+      display:inline-block;
+      width:8px;
+      height:1.1em;
+      background:var(--green);
+      border-radius:1px;
+      animation:blink 1s step-end infinite;
+      vertical-align:text-bottom;
+      margin-left:2px;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* back button */
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      font-family: var(--font);
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.65rem 1.5rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: #0d0f14;
+    }
+    .btn-primary::after {
+      content:'';
+      position:absolute;
+      top:0; left:-100%;
+      width:60%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+      animation:shimmer 2.5s infinite;
+    }
+    @keyframes shimmer { 0%{left:-100%} 100%{left:160%} }
+
+    .btn-primary:hover {
+      background: #00cc6a;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0,255,136,0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid rgba(0,212,255,0.4);
+    }
+    .btn-secondary:hover {
+      background: rgba(0,212,255,0.08);
+      border-color: var(--cyan);
+      transform: translateY(-1px);
+    }
+
+    .footer-note {
+      font-size: 0.72rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="page">
+  <div class="window">
+    <div class="bar">
+      <span class="dot r"></span>
+      <span class="dot y"></span>
+      <span class="dot g"></span>
+      <span class="bar-title">bash — error.log</span>
+    </div>
+    <div class="body">
+      <div class="line">
+        <span class="prompt">❯ </span>
+        <span class="cmd">curl https://nguyengiakhoi.dev/...</span>
+      </div>
+      <div class="line mt">
+        <span class="error-code">404</span>
+      </div>
+      <div class="line">
+        <span class="msg">Error: The page you're looking for doesn't exist<br/>or hasn't been deployed yet.</span>
+      </div>
+      <div class="line mt">
+        <span class="prompt">❯ </span>
+        <span class="cmd">suggest --fix</span>
+      </div>
+      <div class="line">
+        <span class="msg">→ Check the URL for typos<br/>→ The page might be coming soon<br/>→ Head back to the home page</span>
+      </div>
+      <div class="line mt">
+        <span class="prompt">❯ </span>
+        <span class="cursor"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/" class="btn btn-primary">← Go Home</a>
+    <a href="mailto:giakhoi2004@gmail.com" class="btn btn-secondary">Contact Me</a>
+  </div>
+
+  <span class="footer-note">nguyengiakhoi.dev — 404 Not Found</span>
+</div>
+
+<script>
+  // particle canvas
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let animId;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const N = 45;
+  const pts = Array.from({ length: N }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.35,
+    vy: (Math.random() - 0.5) * 0.35,
+    r: Math.random() * 1.4 + 0.4,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < N; i++) {
+      const p = pts[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,107,107,0.45)';
+      ctx.fill();
+      for (let j = i + 1; j < N; j++) {
+        const q = pts[j];
+        const dx = p.x - q.x, dy = p.y - q.y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = `rgba(255,107,107,${0.1*(1-d/120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+</script>
+</body>
+</html>

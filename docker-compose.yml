@@ -1,0 +1,39 @@
+services:
+
+  # ── Production ─────────────────────────────────────────────────────────────
+  # Build và serve static files qua Nginx
+  # Lệnh: docker compose up prod
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner          # chỉ build đến stage "runner"
+    container_name: ngk-landing-prod
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── Development ────────────────────────────────────────────────────────────
+  # Hot reload, mount source code vào container
+  # Lệnh: docker compose up dev
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: ngk-landing-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount source code — thay đổi file sẽ reload ngay (HMR)
+      - .:/app
+      # Giữ node_modules của container, không bị override bởi host
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
