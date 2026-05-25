@@ -14,6 +14,8 @@ services:
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
       - "--certificatesresolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory"
+      - "entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "entrypoints.web.http.redirections.entryPoint.scheme=https"
 
     ports:
       - "80:80"
@@ -21,7 +23,6 @@ services:
       - "8080:8080"
 
     volumes:
-      - ./traefik.yml:/etc/traefik/traefik.yml
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
 
