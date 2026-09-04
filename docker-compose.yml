@@ -14,8 +14,8 @@ services:
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
       - "--certificatesresolvers.myresolver.acme.caServer=https://acme-v02.api.letsencrypt.org/directory"
-      - "entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
 
     ports:
       - "80:80"
@@ -41,7 +41,7 @@ services:
     labels:
       - "traefik.enable=true"
 
-      - "traefik.http.routers.prod.rule=Host(`nguyengiakhoi.io.vn`)"
+      - "traefik.http.routers.prod.rule=Host(`nguyengiakhoi.io.vn`) || Host(`www.nguyengiakhoi.io.vn`)"
       - "traefik.http.routers.prod.entrypoints=websecure"
       - "traefik.http.routers.prod.tls=true"
       - "traefik.http.routers.prod.tls.certresolver=myresolver"
