@@ -17,12 +17,13 @@ import { useDebounce } from '../hooks/useDebounce';
  */
 
 const NAV_ITEMS = [
-  { id: 'hero',       label: 'Home',       icon: '⌂', desc: 'Back to top' },
-  { id: 'about',      label: 'About Me',   icon: '◉', desc: 'Who I am' },
-  { id: 'skills',     label: 'Skills',     icon: '◈', desc: 'Tech stack' },
+  { id: 'hero', label: 'Home', icon: '⌂', desc: 'Back to top' },
+  { id: 'about', label: 'About Me', icon: '◉', desc: 'Who I am' },
+  { id: 'skills', label: 'Skills', icon: '◈', desc: 'Tech stack' },
   { id: 'experience', label: 'Experience', icon: '◎', desc: 'Work history' },
-  { id: 'projects',   label: 'Projects',   icon: '◆', desc: 'Featured work' },
-  { id: 'contact',    label: 'Contact',    icon: '◇', desc: 'Get in touch' },
+  { id: 'projects', label: 'Projects', icon: '◆', desc: 'Featured work' },
+  { id: 'publications', label: 'Publications', icon: '✦', desc: 'AI research papers' },
+  { id: 'contact', label: 'Contact', icon: '◇', desc: 'Get in touch' },
 ];
 
 // forwardRef: cho phép parent truyền ref xuống input bên trong
