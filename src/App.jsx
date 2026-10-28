@@ -551,11 +551,26 @@ function ExperienceSection() {
             <div className="exp-header">
               <div>
                 <h3 className="exp-role">{exp.role}</h3>
-                <p className="exp-company">{exp.company}</p>
+                <p className="exp-company">
+                  {exp.companyUrl ? (
+                    <a
+                      href={exp.companyUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="exp-company-link"
+                    >
+                      {exp.company} <span className="exp-link-icon">↗</span>
+                    </a>
+                  ) : (
+                    exp.company
+                  )}
+                </p>
               </div>
               <span className="exp-period">{exp.period}</span>
             </div>
-            <TerminalWindow title={`${exp.company.toLowerCase().replace(/ /g, '-')}.log`}>
+            <TerminalWindow
+              title={`${(exp.logTitle || exp.company.toLowerCase().replace(/[^a-z0-9]/g, '-'))}.log`}
+            >
               <ul className="exp-bullets">
                 {exp.bullets.map((b, j) => (
                   <li key={j} className="exp-bullet">
@@ -678,6 +693,11 @@ function ProjectsSection() {
               <div className="project-header">
                 <div className="project-header-top">
                   <span className={`project-tag project-tag--${p.color}`}>{p.tag}</span>
+                  {p.badge && (
+                    <span className="project-award-badge">
+                      {p.badge}
+                    </span>
+                  )}
                   {p.isPrivate && (
                     <span className="project-confidential-badge">
                       🔒 Enterprise Client Project
@@ -696,34 +716,93 @@ function ProjectsSection() {
                 </div>
               </div>
 
-              {/* Bullets terminal */}
-              <TerminalWindow title="system_specs.log">
-                {p.privateNotice && (
-                  <div className="project-nda-notice">
-                    <span className="nda-icon">ℹ</span> {p.privateNotice}
+              {/* Project Content: Split layout if project has preview image */}
+              <div className={`project-content ${p.image ? 'project-content--split' : ''}`}>
+                {p.image && (
+                  <div className="project-preview-pane">
+                    <div className="project-preview-mockup">
+                      <div className="project-preview-header">
+                        <div className="terminal-dots">
+                          <span className="dot dot-red" />
+                          <span className="dot dot-yellow" />
+                          <span className="dot dot-green" />
+                        </div>
+                        <div className="project-preview-address">
+                          <span className="preview-lock-icon">🔒</span>
+                          <span className="preview-url-text">
+                            {p.link
+                              ? p.link.replace(/^https?:\/\//, '').replace(/\/$/, '')
+                              : p.isPrivate
+                              ? 'internal.institution.portal'
+                              : `${p.id}.local`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="project-preview-img-container">
+                        <img
+                          src={p.image}
+                          alt={`${p.title} Preview`}
+                          className="project-preview-img"
+                          loading="lazy"
+                        />
+                        {p.link ? (
+                          <a
+                            href={p.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="project-preview-overlay"
+                            title="Visit Live Application"
+                          >
+                            <span className="preview-overlay-btn">
+                              ↗ Visit Live Demo
+                            </span>
+                          </a>
+                        ) : p.isPrivate ? (
+                          <div className="project-preview-overlay">
+                            <span className="preview-overlay-btn preview-overlay-btn--private">
+                              🔒 Enterprise Internal Portal
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                 )}
-                <ul className="project-bullets">
-                  {p.bullets.map((b, j) => (
-                    <li key={j} className="project-bullet">
-                      <span className="bullet-dash">-</span>
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </TerminalWindow>
+
+                <div className="project-specs-pane">
+                  <TerminalWindow title="system_specs.log">
+                    {p.privateNotice && (
+                      <div className="project-nda-notice">
+                        <span className="nda-icon">ℹ</span> {p.privateNotice}
+                      </div>
+                    )}
+                    <ul className="project-bullets">
+                      {p.bullets.map((b, j) => (
+                        <li key={j} className="project-bullet">
+                          <span className="bullet-dash">-</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </TerminalWindow>
+                </div>
+              </div>
 
               {/* Action links */}
               <div className="project-links">
-                <button
-                  className={`project-link-btn project-link-btn--arch project-link-btn--${p.color}`}
-                  onClick={() => setSelectedArchProject(p)}
-                  title="View System Architecture & Flow"
-                >
-                  <span className="link-icon">📐</span> Architecture
-                </button>
-
-                {p.github ? (
+                {Array.isArray(p.github) ? (
+                  p.github.map((gh, idx) => (
+                    <a
+                      key={idx}
+                      href={gh.url || gh}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="project-link-btn project-link-btn--github"
+                    >
+                      <span className="link-icon">⌥</span> {gh.label || 'GitHub Repo'}
+                    </a>
+                  ))
+                ) : p.github ? (
                   <a
                     href={p.github}
                     target="_blank"
@@ -818,19 +897,38 @@ function PublicationsSection() {
                 <div className="pub-badge-row">
                   <span className="pub-status-badge">● {paper.status}</span>
                   <span className="pub-year-badge">{paper.year}</span>
+                  {paper.badges &&
+                    paper.badges.map((b, bIdx) => (
+                      <span key={bIdx} className="pub-tag-badge">
+                        {b}
+                      </span>
+                    ))}
                 </div>
                 <span className="pub-index">Paper #{idx + 1}</span>
               </div>
 
-              <h3 className="pub-title">{paper.title}</h3>
-              <p className="pub-venue">
-                <span className="pub-venue-icon">🏛</span> {paper.venue}
-              </p>
-              <p className="pub-authors">
-                <span className="pub-authors-label">Authors:</span> {paper.authors}
-              </p>
-
-              <p className="pub-abstract">{paper.abstract}</p>
+              <div className="pub-card-body">
+                <div className="pub-card-main">
+                  <h3 className="pub-title">{paper.title}</h3>
+                  <p className="pub-venue">
+                    <span className="pub-venue-icon">🏛</span> {paper.venue}
+                  </p>
+                  <p className="pub-authors">
+                    <span className="pub-authors-label">Authors:</span> {paper.authors}
+                  </p>
+                  <p className="pub-abstract">{paper.abstract}</p>
+                </div>
+                {paper.image && (
+                  <div className="pub-card-media">
+                    <img
+                      src={paper.image}
+                      alt={`${paper.title} Presentation`}
+                      className="pub-media-img"
+                    />
+                    <span className="pub-media-badge">EAI GOODTECHS 2025</span>
+                  </div>
+                )}
+              </div>
 
               <div className="pub-actions">
                 {paper.doi ? (
@@ -840,7 +938,7 @@ function PublicationsSection() {
                     rel="noreferrer"
                     className="pub-btn pub-btn--primary"
                   >
-                    <span className="btn-icon">📄</span> View Paper (DOI)
+                    <span className="btn-icon">📄</span> {paper.doiLabel || 'View Paper'}
                   </a>
                 ) : (
                   <button
@@ -850,6 +948,17 @@ function PublicationsSection() {
                   >
                     <span className="btn-icon">📄</span> DOI / Paper Pending
                   </button>
+                )}
+
+                {paper.pdfLink && (
+                  <a
+                    href={paper.pdfLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="pub-btn pub-btn--pdf"
+                  >
+                    <span className="btn-icon">⬇</span> PDF
+                  </a>
                 )}
 
                 <button
